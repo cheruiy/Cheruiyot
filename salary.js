@@ -1,57 +1,66 @@
-//challenge 3
-//import a readline module for node js environme
-const readline = require('readline')
-//write the tax rates functions
-function calculateTax(income){
- //TaxSlabs
- const taxSlabs = [
-    {limit: 24000, rate:  0.10}, //tax rate of 10% upto 24000
-    {limit: 32333, rate:  0.25},
-    {limit: 50000, rate:  0.30}, 
-    {limit: 800000, rate:  0.325},
-    {above: 800000, rate:  0.35},
-
- ];
-
- //init
- let tax = 0;
- let remainingIncome = income;
- //iterate 
- for (const slab of taxSlabs){
-    //check remaining income amount to be taxed
-    if(remainingIncome <= 0 ) break;
-
-    //calc taxable amount withing every slab
-    const taxableAmount = Math.min(remainingIncome, slab.limit);
-
-    //calc actual tax for the taxable amount
-    tax += taxableAmount * slab.rate;
-    //update
-    remainingIncome -= taxableAmount;
-
- }
-
-return tax;
-
-}
-
-//NHIF
-function calculateNHIFDeductions(grosspay){
-    const nhifRates =[
-        {limit: 5999, deductions: 150},
-        {limit: 100000, deductions: 1700},
-    ];
-
-    for(const rate of nhifRates){
-        if(grosspay <= rate.limit){
-            return rate.deductions;
-        }
+// Function to calculate Tax based on basic salary
+function calculatePayee(basicSalary) {
+    let tax = 0;
+    if (basicSalary <= 24000) {
+        tax = 0;
+    } else if (basicSalary <= 32333) {
+        tax = (basicSalary - 24000) * 0.1;
+    } else if (basicSalary <= 40333) {
+        tax = 833 + (basicSalary - 32333) * 0.15;
+    } else if (basicSalary <= 48333) {
+        tax = 2496 + (basicSalary - 40333) * 0.2;
+    } else if (basicSalary <= 57333) {
+        tax = 4996 + (basicSalary - 48333) * 0.25;
+    } else {
+        tax = 8996 + (basicSalary - 57333) * 0.3;
     }
-    //if it exceeds
-    return nhifRates[nhifRates.length -1].deductions;
+    return tax;
 }
+console.log(calculatePayee());
 
-//nssf
+// Function to calculate nhif deductions
+function calculateNHIF(basicSalary) {
+    let nhif = 0;
+    if (basicSalary <= 5999) {
+        nhif = 150;
+    } else if (basicSalary <= 7999) {
+        nhif = 300;
+    } else if (basicSalary <= 11999) {
+        nhif = 400;
+    } else if (basicSalary <= 14999) {
+        nhif = 500;
+    } else if (basicSalary <= 19999) {
+        nhif = 600;
+    } else if (basicSalary <= 24999) {
+        nhif = 750;
+    } else if (basicSalary <= 29999) {
+        nhif = 850;
+    } else if (basicSalary <= 34999) {
+        nhif = 900;
+    } else if (basicSalary <= 39999) {
+        nhif = 950;
+    } else if (basicSalary <= 44999) {
+        nhif = 1000;
+    } else if (basicSalary <= 49999) {
+        nhif = 1100;
+    } else if (basicSalary <= 59999) {
+        nhif = 1200;
+    } else if (basicSalary <= 69999) {
+        nhif = 1300;
+    } else if (basicSalary <= 79999) {
+        nhif = 1400;
+    } else if (basicSalary <= 89999) {
+        nhif = 1500;
+    } else if (basicSalary <= 99999) {
+        nhif = 1600;
+    } else {
+        nhif = 1700;
+    }
+    return nhif;
+}
+console.log(calculateNHIF());
+
+// Function to calculate nssf deduction
 function calculateNSSFContributions(pensionablePay){
     const tierIRate = 0.06;
     const tierIILowerLimit = 7001
@@ -63,59 +72,21 @@ function calculateNSSFContributions(pensionablePay){
         return tierIILowerLimit* tierIRate;
     }
     }
+    console.log (calculateNSSFContributions())
 
-    // find net salary
-    function calculateNetSalary(basicSalry, benefits){
-const grossSalary = basicSalry + benefits;
-
-const tax = calculateTax(grossSalary);
-
-const NHIFDeductions = calculateNHIFDeductions(grossSalary);
-
-const NSSFDeductions = calculateNSSFContributions(basicSalry);
-
-const netSalary = grossSalary - tax - NHIFDeductions - NSSFDeductions;
-
-return{
-    grossSalary,
-    tax,
-    NHIFDeductions,
-    NSSFDeductions,
-    netSalary
-};
-    }
-
-    //user inputs interface
-function getUserInput(question){
-    const rl = readline.createInterface({
-        input: process.stdin,
-        output: process.stdout
-    });
-
-    return new Promise((resolve) => {
-        rl.question(question, (answer)=>{
-            rl.close();
-            resolve(parseFloat(answer));
-        });
-    });
+// Function to calculate gross salary
+function calculateGrossSalary(basicSalary, benefits) {
+    return basicSalary + benefits;
 }
 
-//for the program to run
-
-async function run (){
-    const basicSalry = await getUserInput("Basic Sal = ");
-
-    const benefits = await getUserInput( "Benefits = ");
-
-    const salaryDetails = calculateNetSalary(basicSalry, benefits);
-
-    //to print out
-
-    console.log("Gross Sal = ", salaryDetails.grossSalary);
-    console.log("TAX  = ", salaryDetails.tax);
-    console.log("NHIF  = ", salaryDetails.NHIFDeductions);
-    console.log("NSSF = ", salaryDetails.NSSFDeductions);
-    console.log("Net Sal = ", salaryDetails.netSalary);
+// Function to calculate net salary
+function calculateNetSalary(basicSalary, benefits) {
+    const payee = calculatePayee(basicSalary);
+    const nhif = calculateNHIF(basicSalary);
+    const nssf = calculateNSSF(basicSalary);
+    const grossSalary = calculateGrossSalary(basicSalary, benefits);
+    const deductions = payee + nhif + nssf;
+    const netSalary = grossSalary - deductions;
+    return netSalary;
 }
-//
-run();
+console.log(calculateNetSalary());
